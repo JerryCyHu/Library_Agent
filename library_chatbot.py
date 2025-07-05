@@ -33,9 +33,8 @@ def build_prompt(user_query, books):
     )
     sys_block = (
         "You are a literary recommendation assistant.\n\n"
-        "## Task\n"
         "Given the catalogue below and a user request, select the most relevant books and explain why each one fits.\n\n"
-        "## Guidelines\n"
+        "Your Guidelines\n"
         "1. Use **only** titles that appear in the catalogue—do not invent books or facts.\n"
         "2. Recommend **1 – 2** books, ordered by relevance.\n"
         "3. For every title, include:\n"
@@ -106,7 +105,7 @@ def main():
             q = input("\nYou: ").strip()
             if not q:
                 continue
-            books = query_books(q, top_k=3)
+            books = query_books(q, top_k=2)
             prompt = build_prompt(q, books)
             answer = generate_answer(prompt)
             print(answer)
