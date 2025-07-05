@@ -1,18 +1,17 @@
-# rag_bibliotheca.py  ── 只要 books_chroma 已准备好就能直接跑
+
 import re, json, signal, chromadb, torch
 from sentence_transformers import SentenceTransformer
 from transformers import (
     AutoModelForCausalLM, AutoTokenizer, TextStreamer
 )
 
-# ─────────────── 1. 载入模型 ──────────────────────────────────────────
-# (1) 编码器：Alibaba GTE multilingual ‒ FP16
+
 encoder = SentenceTransformer(
     "Alibaba-NLP/gte-multilingual-base",
     trust_remote_code=True, device="cuda"
-).half()                                              # ★ FP16
+).half()
 
-# (2) 解码器：Lite-Oute-2-Mamba2Attn-250M ‒ FP16
+
 LM_NAME = "OuteAI/Lite-Oute-2-Mamba2Attn-250M-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(LM_NAME)
 llm = AutoModelForCausalLM.from_pretrained(
@@ -20,11 +19,11 @@ llm = AutoModelForCausalLM.from_pretrained(
     trust_remote_code=True
 ).eval()
 
-# ─────────────── 2. 连接向量库 ──────────────────────────────────────
+
 client = chromadb.PersistentClient("./books_chroma")
 collection = client.get_collection("booksums_gte")
 
-# ─────────────── 3. 工具函数们 ─────────────────────────────────────
+
 
 def build_prompt(user_query, books):
     """拼成系统 + 用户模板"""
@@ -99,7 +98,7 @@ def generate_answer(prompt, max_new=512):
     )
     return tokenizer.decode(out[0, ids["input_ids"].shape[-1]:], skip_special_tokens=True)
 
-# ─────────────── 4. 主循环 (Ctrl-C 退出) ─────────────────────────────
+
 def main():
     print("Bibliotheca ready. Ask me anything!\n")
     try:
@@ -110,7 +109,7 @@ def main():
             books = query_books(q, top_k=3)
             prompt = build_prompt(q, books)
             answer = generate_answer(prompt)
-            print(answer)  # 只展示 JSON
+            print(answer)
     except (KeyboardInterrupt, EOFError):
         print("\nBye!")
 

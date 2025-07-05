@@ -7,21 +7,21 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 model = SentenceTransformer(
     "Alibaba-NLP/gte-multilingual-base",
-    trust_remote_code=True,           # GTE 系列需要
-    device="cuda"                     # 或 "cpu"
+    trust_remote_code=True,
+    device="cuda"
 ).half() 
 
-# --- ChromaDB ----------------------------------------------------------------
+
 chroma_client = chromadb.PersistentClient("./books_chroma")
 collection = chroma_client.get_or_create_collection("booksums_gte")
 
-# --- 读取 JSON ---------------------------------------------------------------
-data_path = pathlib.Path("booksummaries.json")      # 你前一步生成的文件
+
+data_path = pathlib.Path("booksummaries.json")
 books = json.loads(data_path.read_text(encoding="utf-8"))
 
-# --- 批量生成文本 & 元数据 ---------------------------------------------------
+
 batched_texts, batched_metas, batched_ids = [], [], []
-batch_size = 512  # 自行调整
+batch_size = 512
 
 def flush_batch():
     if not batched_texts:
@@ -53,7 +53,7 @@ for idx, book in enumerate(tqdm(books, desc="Embedding")):
     })
     batched_ids.append(f"{book_id}.2")
 
-    # 批量写入
+
     if len(batched_texts) >= batch_size:
         flush_batch()
 
